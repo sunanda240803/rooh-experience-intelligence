@@ -216,6 +216,48 @@ async def analyze_experience(req: AnalyzeRequest, db: Session = Depends(get_db))
 def get_dashboard_stats(db: Session = Depends(get_db)):
     """Returns overview count metrics for the review dashboard."""
     total = db.query(Experience).count()
+    if total == 0:
+        # Auto-seed demo data on first load if database is empty
+        for item in DEMO_EXPERIENCES_DATA:
+            extracted = item["extracted"]
+            exp = Experience(
+                id=item["id"],
+                title=extracted.title,
+                description=extracted.description,
+                location=extracted.location,
+                date=extracted.date,
+                start_time=extracted.start_time,
+                end_time=extracted.end_time,
+                price=extracted.price,
+                currency=extracted.currency,
+                category=extracted.category,
+                organizer=extracted.organizer,
+                source_url=item["url"],
+                source_name=extracted.source_name,
+                relevance_score=extracted.relevance.relevance_score,
+                relevance_reason=extracted.relevance.relevance_reason,
+                is_relevant=extracted.relevance.is_relevant,
+                confidence_score=93 if item["id"] != "demo-conflicting-source-case" else 72,
+                confidence_label="High" if item["id"] != "demo-conflicting-source-case" else "Medium",
+                status=item["initial_status"],
+                is_demo=True
+            )
+            db.add(exp)
+            db.flush()
+
+            val_issues = validate_extracted_experience(extracted, item["url"])
+            for issue in val_issues:
+                v_model = ValidationIssue(
+                    experience_id=exp.id,
+                    issue_type=issue.issue_type,
+                    message=issue.message,
+                    severity=issue.severity,
+                    resolved=False
+                )
+                db.add(v_model)
+        db.commit()
+        total = db.query(Experience).count()
+
     pending = db.query(Experience).filter(Experience.status == "needs_review").count()
     approved = db.query(Experience).filter(Experience.status == "approved").count()
     rejected = db.query(Experience).filter(Experience.status == "rejected").count()
