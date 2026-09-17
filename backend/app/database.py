@@ -5,8 +5,11 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# SQLite database file for local POC development
-DB_URL = os.getenv("DATABASE_URL", "sqlite:///./rooh_experiences.db")
+# SQLite database file path (uses writable /tmp directory on Vercel serverless)
+if os.getenv("VERCEL"):
+    DB_URL = os.getenv("DATABASE_URL", "sqlite:////tmp/rooh_experiences.db")
+else:
+    DB_URL = os.getenv("DATABASE_URL", "sqlite:///./rooh_experiences.db")
 
 # For SQLite, enable check_same_thread=False for multi-threaded FastAPI execution
 connect_args = {"check_same_thread": False} if DB_URL.startswith("sqlite") else {}
