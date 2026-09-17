@@ -6,7 +6,9 @@ import {
   AnalyzeRequest,
 } from '../types';
 
-const rawBase = (import.meta as any).env?.VITE_API_BASE_URL || 'https://rooh-backend-jlq7.onrender.com';
+// Live Production Render Backend API URL
+const RENDER_BACKEND_URL = 'https://rooh-backend-jlq7.onrender.com/api';
+const rawBase = (import.meta as any).env?.VITE_API_BASE_URL || RENDER_BACKEND_URL;
 const API_BASE = rawBase.endsWith('/api') ? rawBase : `${rawBase.replace(/\/$/, '')}/api`;
 
 export const api = {
