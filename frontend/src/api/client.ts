@@ -6,7 +6,8 @@ import {
   AnalyzeRequest,
 } from '../types';
 
-const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL || 'https://rooh-backend-jlq7.onrender.com';
+const rawBase = (import.meta as any).env?.VITE_API_BASE_URL || 'https://rooh-backend-jlq7.onrender.com';
+const API_BASE = rawBase.endsWith('/api') ? rawBase : `${rawBase.replace(/\/$/, '')}/api`;
 
 export const api = {
   // Analyze URL or trigger Demo mode
